@@ -46,7 +46,7 @@ def build_payload(query, location):
     
 # converts json to dict
 def read_json():
-    with open("berlin_kebab.geojson", "r", encoding="utf-8") as file:
+    with open("../berlin_kebab.geojson", "r", encoding="utf-8") as file:
         geojson_file = json.load(file)
     return geojson_file
 
