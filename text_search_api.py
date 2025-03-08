@@ -11,6 +11,37 @@ headers = {
 }
 
 
+def format_query(feature):
+    return f'{feature["properties"].get("name","")} \
+            Berlin \
+            {feature["properties"].get("addr:suburb","")} \
+            {feature["properties"].get("addr:housenumber","")} \
+            {feature["properties"].get("addr:street","")}'
+
+def extract_location(feature):
+
+    geometry_type = feature["geometry"]["type"]
+    if geometry_type == "Polygon":
+
+        return {"latitude": feature["geometry"]["coordinates"][0][0][1], "longitude": feature["geometry"]["coordinates"][0][0][0]}
+
+    elif geometry_type == "Point":
+        return {"latitude": feature["geometry"]["coordinates"][1], "longitude": feature["geometry"]["coordinates"][0]}
+
+    else:
+        return {}
+    
+
+def build_payload(query, location):
+    return {
+            "textQuery": query,
+            "locationBias": {
+                "circle": {
+                    "center": location,
+                    "radius": 100.0,
+                }
+            }
+        }
 
     
 # converts json to dict
@@ -20,47 +51,19 @@ def read_json():
     return geojson_file
 
 
-# extracts payload from input and calls Google Search Text API
+# calls Google Search Text API
 def search_text(json_input):
 
     result = []
 
     for feature in json_input["features"]:
-        query = feature["properties"].get("name","")+" "+ \
-                "Berlin" +" "+ \
-                feature["properties"].get("addr:suburb","")+" "+ \
-                feature["properties"].get("addr:housenumber","")+" "+ \
-                feature["properties"].get("addr:street","")
-        
+      
+        query = format_query(feature)
 
         # Geometry Type of restaurants can be either Poylgon or Point
-        geometry_type = feature["geometry"]["type"]
-        if geometry_type == "Polygon":
+        location = extract_location(feature)
 
-            location = {
-                
-                "latitude": feature["geometry"]["coordinates"][0][0][1], 
-                "longitude": feature["geometry"]["coordinates"][0][0][0]
-                }
-
-        elif geometry_type == "Point":
-            location = {
-                "latitude": feature["geometry"]["coordinates"][1], 
-                "longitude": feature["geometry"]["coordinates"][0]
-                }
-
-        else:
-            location = {}
-
-        payload = {
-            "textQuery": query,
-            "locationBias": {
-                "circle": {
-                    "center": location,
-                    "radius": 100.0,
-                }
-            }
-        }
+        payload = build_payload(query, location)
 
         response = requests.post(URL, headers=headers, json=payload)
         result.append(response.json())
@@ -119,6 +122,3 @@ result = search_text(
 
 # result = search_text(kebabs_berlin)
 print(result)
-
-
-# write_result(result)
