@@ -1,10 +1,13 @@
-import requests
 import json
 import asyncio
 import aiohttp
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
-API_KEY = "AIzaSyDqSE_mOTEmzyN36mp9Wd9L9wYenYaHoMQ"  
+API_KEY = os.getenv("GOOGLE_API_KEY")
 URL = "https://places.googleapis.com/v1/places:searchText"
 
 headers = {
