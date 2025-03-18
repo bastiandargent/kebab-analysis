@@ -1,31 +1,25 @@
-import osmnx as ox
-import networkx as nx
-import geopandas as gpd
-
-# Configure OSMnx
-# ox.settings.use_cache = True
-# ox.settings.log_console = True
-
-place_name = "Berlin, Germany"
-# G = ox.graph_from_place(place_name, network_type="walk")
-
-# Project the graph to UTM zone 33N (appropriate for Berlin)
-# G = ox.project_graph(G, to_crs="EPSG:32633")
-
-# Get railway stations and subway entrances
-tags = {
-    'railway': ['station', 'halt'],
-    'tram': 'yes' 
-}
+import asyncio
+import json    
+from osm_data import get_osm_walking_network, get_osm_train_station
+from google_places_api import search_text, read_json, write_result
 
 
-stations = ox.features_from_place(place_name, tags=tags)
 
-# Project stations to the same CRS
-stations = stations.to_crs("EPSG:32633")
+async def main():
 
-# Save the network and stations data
-# ox.save_graph_geopackage(G, filepath='berlin_network.gpkg')
-stations.to_file('berlin_stations.gpkg', driver='GPKG')
 
-print("Analysis completed. Files saved: berlin_network.gpkg, berlin_stations.gpkg, berlin_network.png")
+    location = "Berlin, Germany"
+    get_osm_walking_network(location)
+    get_osm_train_station(location)
+
+    kebabs_berlin = read_json()
+    # If statement checks if result exists then skip api and directly write the result
+
+    result = await search_text(kebabs_berlin)
+    write_result(result)
+
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
