@@ -1,0 +1,24 @@
+name: Run Tests
+
+on: [push, pull_request]  # Runs on every push and pull request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # Fetch the code from GitHub
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9.21"  # Set Python version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Install dependencies (ensure you have a requirements.txt file)
+
+      - name: Run tests
+        run: pytest  # Run pytest
